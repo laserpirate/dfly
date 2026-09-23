@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Panels</title>
+<link rel="icon" href="data:,"><meta name="robots" content="noindex, nofollow, noarchive, noimageindex"><meta name="referrer" content="no-referrer"><meta name="copyright" content="© 2026 Marko Kihara Manriquez. All rights reserved."><meta name="author" content="Marko Kihara Manriquez">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b100e;color:#e1e2e3;overflow:hidden;
+  font:12px/1.5 ui-sans-serif,-apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  cursor:zoom-in;touch-action:none}
+#stage.zoom{cursor:grab}
+#stage.zoom.drag{cursor:grabbing}
+img{display:block;max-width:100%;max-height:100%;object-fit:contain;
+  transform-origin:0 0;user-select:none;-webkit-user-drag:none}
+#stage.zoom img{max-width:none;max-height:none}
+.hud{position:fixed;z-index:5;letter-spacing:.10em;text-transform:uppercase;font-size:11px}
+#back{top:14px;left:16px;color:#e1e2e3;text-decoration:none;
+  border:1px solid rgba(128,130,133,.35);padding:8px 12px}
+#back:hover{border-color:#e1e2e3;background:rgba(62,70,107,.28)}
+#cap{bottom:14px;left:16px;color:#c7c8ca}
+#count{bottom:14px;right:16px;color:#808285}
+button.nav{position:fixed;top:50%;transform:translateY(-50%);z-index:5;
+  background:rgba(11,16,14,.55);color:#e1e2e3;border:1px solid rgba(128,130,133,.35);
+  font-size:20px;line-height:1;padding:14px 16px;cursor:pointer}
+button.nav:hover{border-color:#e1e2e3}
+#prev{left:16px}#next{right:16px}
+@media (max-width:620px){button.nav{padding:10px 12px;font-size:16px}}
+</style></head>
+<body>
+<a href="ktb.html" id="back" class="hud">ktb</a>
+<div id="stage"><img id="im" alt=""></div>
+<button class="nav" id="prev" aria-label="previous">&larr;</button>
+<button class="nav" id="next" aria-label="next">&rarr;</button>
+<div id="cap" class="hud"></div>
+<div id="count" class="hud"></div>
+<script>
+(function(){
+  var S = [{"f": "p1.png", "n": "P1"}, {"f": "p2.png", "n": "P2"}, {"f": "p3.png", "n": "P3"}, {"f": "p4.png", "n": "P4"}, {"f": "p5.png", "n": "Prologue"}, {"f": "p6.png", "n": "Habitat views"}];
+  var i = 0, zoom = false, ox = 0, oy = 0, dragging = false, sx = 0, sy = 0;
+  var im = document.getElementById('im'), stage = document.getElementById('stage');
+  var cap = document.getElementById('cap'), count = document.getElementById('count');
+  function draw(){
+    var s = S[i];
+    im.src = s.f; im.alt = s.n;
+    cap.textContent = s.n;
+    count.textContent = (i+1) + ' / ' + S.length;
+    unzoom();
+  }
+  function unzoom(){
+    zoom = false; ox = oy = 0;
+    stage.classList.remove('zoom','drag');
+    im.style.transform = '';
+  }
+  function go(d){ i = (i + d + S.length) % S.length; draw(); }
+  /* click toggles 100 per cent, anchored where the pointer is, so a tap on a corner of a
+     24 x 36 sheet lands on that corner rather than on the middle. */
+  stage.addEventListener('click', function(e){
+    if (dragging) return;
+    if (zoom) { unzoom(); return; }
+    var r = im.getBoundingClientRect();
+    var k = im.naturalWidth / r.width;
+    zoom = true; stage.classList.add('zoom');
+    im.style.width = im.naturalWidth + 'px';
+    im.style.height = 'auto';
+    ox = -( (e.clientX - r.left) * k - innerWidth/2 );
+    oy = -( (e.clientY - r.top ) * k - innerHeight/2 );
+    im.style.transform = 'translate(' + ox + 'px,' + oy + 'px)';
+  });
+  function down(x,y){ if(!zoom) return; dragging=false; sx=x-ox; sy=y-oy; stage.classList.add('drag'); }
+  function move(x,y,e){ if(!zoom || sx===null) return; if(e&&e.buttons===0&&e.type==='pointermove') return;
+    dragging=true; ox=x-sx; oy=y-sy; im.style.transform='translate('+ox+'px,'+oy+'px)'; }
+  var tracking = false;
+  stage.addEventListener('pointerdown', function(e){ tracking=true; down(e.clientX,e.clientY); });
+  addEventListener('pointermove', function(e){ if(tracking) move(e.clientX,e.clientY,e); });
+  addEventListener('pointerup', function(){ tracking=false; stage.classList.remove('drag');
+    setTimeout(function(){ dragging=false; }, 0); });
+  document.getElementById('prev').addEventListener('click', function(e){ e.stopPropagation(); go(-1); });
+  document.getElementById('next').addEventListener('click', function(e){ e.stopPropagation(); go(1); });
+  addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft') go(-1);
+    else if (e.key === 'ArrowRight') go(1);
+    else if (e.key === 'Escape') unzoom();
+  });
+  im.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  draw();
+}());
+</script>
+</body></html>

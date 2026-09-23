@@ -1709,9 +1709,7 @@ function setPanels(on){
   document.getElementById('btnPanels').classList.toggle('on', on);
   fitBars();
 }
-document.getElementById('btnPanels').addEventListener('click', function(){
-  setPanels(document.documentElement.dataset.panels !== 'on');
-});
+document.getElementById('btnPanels').addEventListener('click', function(){ location.href = 'panels.html'; });
 document.getElementById('btnPanelsShut').addEventListener('click', function(){ setPanels(false); });
 
  
